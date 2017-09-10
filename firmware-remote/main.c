@@ -49,6 +49,11 @@ ISR(PCINT0_vect)
 	nrf_poll();
 }
 
+ISR(PCINT1_vect)
+{
+	/* Switches, just to wake up the main loop. */
+}
+
 static void hello(void)
 {
 	uint8_t i;
@@ -79,9 +84,10 @@ int __attribute__((noreturn)) main(void)
 	spi_init();
 	nrf_init();
 
-	/* nRF interrupt */
-	NRF_PCMSK |= _BV(NRF_PCINT);
-	PCICR |= _BV(PCIE0);
+	/* PC interrupt */
+	NRF_PCMSK |= NRF_PCINT;
+	SW_PCMSK |= SW_PCINT;
+	PCICR |= _BV(PCIE0) | _BV(PCIE1);
 
 	hello();
 
@@ -104,7 +110,7 @@ int __attribute__((noreturn)) main(void)
 		else
 			led1_off();
 
-		//set_sleep_mode(SLEEP_MODE_IDLE);
-		//sleep_mode();
+		set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+		sleep_mode();
 	}
 }

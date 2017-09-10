@@ -44,7 +44,7 @@
 #define nrf_ce_l() (NRF_PORT &= ~_BV(NRF_CE))
 
 #define NRF_PCMSK PCMSK0
-#define NRF_PCINT PCINT0
+#define NRF_PCINT _BV(PCINT0)
 
 /* Switches */
 #define SW_PORT        PORTC
@@ -63,3 +63,6 @@
 #define sw2_read()	(!(SW_PIN & _BV(SW2)))
 #define sw3_read()	(!(SW_PIN & _BV(SW3)))
 #define sw4_read()	(!(SW_PIN & _BV(SW4)))
+
+#define SW_PCMSK PCMSK1
+#define SW_PCINT (_BV(PCINT9) | _BV(PCINT11) | _BV(PCINT12) | _BV(PCINT13))
