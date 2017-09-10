@@ -3425,13 +3425,6 @@ This is the very popular, low cost, very low power RF transceiver from Nordic Se
 <label x="114.3" y="152.4" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="XXX" class="0">
-<segment>
-<pinref part="IC1" gate="1" pin="PC2(ADC2/PCINT10)"/>
-<wire x1="104.14" y1="157.48" x2="114.3" y2="157.48" width="0.1524" layer="91"/>
-<label x="114.3" y="157.48" size="1.778" layer="95" rot="MR0"/>
-</segment>
-</net>
 </nets>
 </sheet>
 </sheets>

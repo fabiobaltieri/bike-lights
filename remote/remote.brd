@@ -1596,9 +1596,6 @@ OSH Park compatible</description>
 <wire x1="44.6" y1="16.2" x2="48.8" y2="12" width="0.2" layer="1"/>
 <wire x1="48.8" y1="12" x2="50.6" y2="12" width="0.2" layer="1"/>
 </signal>
-<signal name="XXX">
-<contactref element="IC1" pad="25"/>
-</signal>
 </signals>
 <errors>
 <approved hash="19,16,72da3d63abd202cd"/>
