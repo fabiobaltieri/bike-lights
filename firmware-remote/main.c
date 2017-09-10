@@ -14,6 +14,9 @@
 #include <util/delay.h>
 
 #include "board.h"
+#include "spi.h"
+#include "nrf24l01p.h"
+#include "nrf_frames.h"
 
 static void reset_cpu(void)
 {
@@ -22,6 +25,28 @@ static void reset_cpu(void)
 	wdt_enable(WDTO_15MS);
 
 	for (;;);
+}
+
+struct nrf_frame frm;
+static uint8_t seq = 0;
+static uint8_t flags = 0x00;
+
+static void send_frame(void) {
+	struct nrf_bike_lights *nbl = &frm.msg.bike_lights;
+
+	frm.board_id = 0xfe;
+	frm.msg_id = NRF_MSG_ID_BIKE_LIGHT;
+	frm.len = sizeof(frm);
+	frm.seq = seq++;
+	nbl->flags = flags;
+
+	nrf_standby();
+	nrf_tx((uint8_t *)&frm, sizeof(frm));
+}
+
+ISR(PCINT0_vect)
+{
+	nrf_poll();
 }
 
 static void hello(void)
@@ -50,15 +75,13 @@ int __attribute__((noreturn)) main(void)
 	led_init();
 	sw_init();
 
-	//spi_init();
-
 	/* nRF init */
-	NRF_DDR |= _BV(NRF_CS);
-	/*
-	nrf_cs_h();
-	nrf_ce_l();
+	spi_init();
 	nrf_init();
-	*/
+
+	/* nRF interrupt */
+	NRF_PCMSK |= _BV(NRF_PCINT);
+	PCICR |= _BV(PCIE0);
 
 	hello();
 
