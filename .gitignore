@@ -1,0 +1,11 @@
+*.o
+*.d
+*.hex
+*.elf
+*.[bs]#?
+*.bin
+*.lck
+*.swp
+*/.version
+version.c
+*.fcstd1
