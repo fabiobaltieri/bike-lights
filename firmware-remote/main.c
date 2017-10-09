@@ -32,6 +32,7 @@ static uint8_t seq = 0;
 static uint8_t flags;
 static uint8_t tx_on;
 static volatile uint8_t retransmit;
+static volatile uint8_t repoll;
 
 static void send_frame(void) {
 	struct nrf_bike_lights *nbl = &frm.msg.bike_lights;
@@ -54,6 +55,7 @@ ISR(PCINT0_vect)
 ISR(PCINT1_vect)
 {
 	/* Switches, just to wake up the main loop. */
+	repoll = 1;
 	retransmit = 1;
 }
 
@@ -68,13 +70,33 @@ static void toggle_on_off(void)
 	tx_on ^= 1;
 
 	if (tx_on) {
-		/* WDT as periodic interrupt */
+		/* WDT as periodic interrupt
+		 * WDP: 100 = .25s */
 		WDTCSR |= (1 << WDE) | (1 << WDCE);
 		WDTCSR = (0 << WDCE) | (1 << WDIF) | (1 << WDIE) |
-			(1 << WDP2) | (1 << WDP1) | (0 << WDP0);
+			(1 << WDP2) | (0 << WDP1) | (0 << WDP0);
 	} else {
 		wdt_disable();
 	}
+}
+
+static void poll_buttons(void)
+{
+	if (sw1_read())
+		toggle_on_off();
+
+	if (sw2_read()) {
+		flags ^= NRF_BL_REAR_BLINKING;
+		flags ^= NRF_BL_FRONT_STEADY;
+	}
+
+	if (sw3_read())
+		flags ^= NRF_BL_FRONT_BEAM;
+
+	if (sw4_read())
+		flags |= NRF_BL_REAR_BEAM;
+	else
+		flags &= ~NRF_BL_REAR_BEAM;
 }
 
 static void update_leds(void)
@@ -99,7 +121,7 @@ static void update_leds(void)
 static void blink(void)
 {
 	led2_on();
-	_delay_ms(33);
+	_delay_ms(20);
 	led2_off();
 }
 
@@ -153,32 +175,23 @@ int __attribute__((noreturn)) main(void)
 
 	sei();
 	for (;;) {
-		_delay_ms(2);
-
-		if (sw1_read())
-			toggle_on_off();
-
-		if (sw2_read()) {
-			flags ^= NRF_BL_REAR_BLINKING;
-			flags ^= NRF_BL_FRONT_STEADY;
+		if (repoll) {
+			_delay_ms(2);
+			poll_buttons();
 		}
 
-		if (sw3_read())
-			flags ^= NRF_BL_FRONT_BEAM;
-
-		if (sw4_read())
-			flags |= NRF_BL_REAR_BEAM;
-		else
-			flags &= ~NRF_BL_REAR_BEAM;
+		update_leds();
 
 		if (retransmit) {
-			update_leds();
 			blink();
 			send_frame();
 			retransmit = 0;
 		}
 
-		wait_release();
+		if (repoll) {
+			wait_release();
+			repoll = 0;
+		}
 
 		set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 		sleep_mode();
