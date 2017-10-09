@@ -9,3 +9,17 @@
 */.version
 version.c
 *.fcstd1
+*.stl
+
+*.dri
+*.gbl
+*.gbo
+*.gbs
+*.gko
+*.gpi
+*.gtl
+*.gto
+*.gts
+*.xln
+*.creamtop
+*.creambot
